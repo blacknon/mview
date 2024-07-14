@@ -1486,5 +1486,5 @@ func (t *Table) findSelected() (row, column int) {
 			}
 		}
 	}
-	return -1, -1
+	return 0, 0
 }
