@@ -809,7 +809,12 @@ func (t *Table) Sort(column int, descending bool) {
 		return t.sortFunc(column, j, i)
 	})
 
-	t.selected(t.findSelected())
+	t.selectedRow, t.selectedColumn = t.findSelected()
+	if t.selectionChanged != nil {
+		t.Unlock()
+		t.selectionChanged(t.selectedRow, t.selectedColumn)
+		t.Lock()
+	}
 }
 
 // Draw draws this primitive onto the screen.
