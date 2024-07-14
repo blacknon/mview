@@ -694,6 +694,11 @@ func (t *Table) GetSortClickedColumn() int {
 	return t.sortClickedColumn
 }
 
+// GetSortClickedDescending return the sortClickedDescending
+func (t *Table) GetSortClickedDescending() bool {
+	return t.sortClickedDescending
+}
+
 // cellAt returns the row and column located at the given screen coordinates.
 // Each returned value may be negative if there is no row and/or cell. This
 // function will also process coordinates outside the table's inner rectangle so
@@ -811,9 +816,7 @@ func (t *Table) Sort(column int, descending bool) {
 
 	t.selectedRow, t.selectedColumn = t.findSelected()
 	if t.selectionChanged != nil {
-		t.Unlock()
 		t.selectionChanged(t.selectedRow, t.selectedColumn)
-		t.Lock()
 	}
 }
 
