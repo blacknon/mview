@@ -1,5 +1,5 @@
 /*
-Package cview implements rich widgets for terminal based user interfaces.
+Package mview implements rich widgets for terminal based user interfaces.
 
 See the demos folder and the example application provided with the
 NewApplication documentation for usage examples.
@@ -195,15 +195,15 @@ containing the text "Hello, world!":
   package main
 
   import (
-    "code.rocketnine.space/tslocum/cview"
+    "github.com/blacknon/mview"
   )
 
   func main() {
-    tv := cview.NewTextView()
+    tv := mview.NewTextView()
     tv.SetText("Hello, world!").
        SetBorder(true).
        SetTitle("Greetings")
-    if err := cview.NewApplication().SetRoot(tv, true).Run(); err != nil {
+    if err := mview.NewApplication().SetRoot(tv, true).Run(); err != nil {
       panic(err)
     }
   }
@@ -223,4 +223,4 @@ Demos
 The "demos" subdirectory contains a demo for each widget, as well as a
 presentation which gives an overview of the widgets and how they may be used.
 */
-package cview
+package mview

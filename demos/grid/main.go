@@ -2,18 +2,18 @@
 package main
 
 import (
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 )
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
 	app.EnableMouse(true)
 
-	newPrimitive := func(text string) cview.Primitive {
-		tv := cview.NewTextView()
-		tv.SetTextAlign(cview.AlignCenter)
+	newPrimitive := func(text string) mview.Primitive {
+		tv := mview.NewTextView()
+		tv.SetTextAlign(mview.AlignCenter)
 		tv.SetText(text)
 		return tv
 	}
@@ -21,7 +21,7 @@ func main() {
 	main := newPrimitive("Main content")
 	sideBar := newPrimitive("Side Bar")
 
-	grid := cview.NewGrid()
+	grid := mview.NewGrid()
 	grid.SetRows(3, 0, 3)
 	grid.SetColumns(30, 0, 30)
 	grid.SetBorders(true)

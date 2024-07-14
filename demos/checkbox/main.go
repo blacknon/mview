@@ -2,16 +2,16 @@
 package main
 
 import (
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 )
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
 	app.EnableMouse(true)
 
-	checkbox := cview.NewCheckBox()
+	checkbox := mview.NewCheckBox()
 	checkbox.SetLabel("Hit Enter to check box: ")
 
 	app.SetRoot(checkbox, true)

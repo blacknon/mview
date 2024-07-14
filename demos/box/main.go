@@ -2,15 +2,15 @@
 package main
 
 import (
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 	"github.com/gdamore/tcell/v2"
 )
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
-	box := cview.NewBox()
+	box := mview.NewBox()
 	box.SetBorder(true)
 	box.SetBorderAttributes(tcell.AttrBold)
 	box.SetTitle("A [red]c[yellow]o[green]l[darkcyan]o[blue]r[darkmagenta]f[red]u[yellow]l[white] [black:red]c[:yellow]o[:green]l[:darkcyan]o[:blue]r[:darkmagenta]f[:red]u[:yellow]l[white:] [::bu]title")

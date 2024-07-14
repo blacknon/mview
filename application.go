@@ -1,4 +1,4 @@
-package cview
+package mview
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ const (
 // The following command displays a primitive p on the screen until Ctrl-C is
 // pressed:
 //
-//	if err := cview.NewApplication().SetRoot(p, true).Run(); err != nil {
+//	if err := mview.NewApplication().SetRoot(p, true).Run(); err != nil {
 //	    panic(err)
 //	}
 type Application struct {

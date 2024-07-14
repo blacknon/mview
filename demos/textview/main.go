@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -20,12 +20,12 @@ Capitalize on low hanging fruit to identify a ballpark value added activity to b
 [yellow]Press Enter, then Tab/Backtab for word selections`
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
 	app.EnableMouse(true)
 
-	textView := cview.NewTextView()
+	textView := mview.NewTextView()
 	textView.SetDynamicColors(true)
 	textView.SetRegions(true)
 	textView.SetWordWrap(true)

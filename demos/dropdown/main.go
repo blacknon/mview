@@ -1,22 +1,22 @@
 // Demo code for the DropDown primitive.
 package main
 
-import "code.rocketnine.space/tslocum/cview"
+import "github.com/blacknon/mview"
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
 	app.EnableMouse(true)
 
-	dropdown := cview.NewDropDown()
+	dropdown := mview.NewDropDown()
 	dropdown.SetLabel("Select an option (hit Enter): ")
 	dropdown.SetOptions(nil,
-		cview.NewDropDownOption("First"),
-		cview.NewDropDownOption("Second"),
-		cview.NewDropDownOption("Third"),
-		cview.NewDropDownOption("Fourth"),
-		cview.NewDropDownOption("Fifth"))
+		mview.NewDropDownOption("First"),
+		mview.NewDropDownOption("Second"),
+		mview.NewDropDownOption("Third"),
+		mview.NewDropDownOption("Fourth"),
+		mview.NewDropDownOption("Fifth"))
 
 	app.SetRoot(dropdown, true)
 	if err := app.Run(); err != nil {

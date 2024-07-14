@@ -4,26 +4,26 @@ package main
 import (
 	"fmt"
 
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 )
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
 	app.EnableMouse(true)
 
-	list := cview.NewList()
+	list := mview.NewList()
 
 	reset := func() {
 		list.Clear()
 		for i := 0; i < 4; i++ {
-			item := cview.NewListItem(fmt.Sprintf("List item %d", i+1))
+			item := mview.NewListItem(fmt.Sprintf("List item %d", i+1))
 			item.SetSecondaryText("Some explanatory text")
 			item.SetShortcut(rune('a' + i))
 			list.AddItem(item)
 		}
-		quitItem := cview.NewListItem("Quit")
+		quitItem := mview.NewListItem("Quit")
 		quitItem.SetSecondaryText("Press to exit")
 		quitItem.SetShortcut('q')
 		quitItem.SetSelectedFunc(func() {

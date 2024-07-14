@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -18,8 +18,8 @@ The [black:red]tags [black:green]look [black:yellow]like [::u]this:
 [#00ff00[]`
 
 // Colors demonstrates how to use colors.
-func Colors(nextSlide func()) (title string, info string, content cview.Primitive) {
-	tv := cview.NewTextView()
+func Colors(nextSlide func()) (title string, info string, content mview.Primitive) {
+	tv := mview.NewTextView()
 	tv.SetBorder(true)
 	tv.SetTitle("A [red]c[yellow]o[green]l[darkcyan]o[blue]r[darkmagenta]f[red]u[yellow]l[white] [black:red]c[:yellow]o[:green]l[:darkcyan]o[:blue]r[:darkmagenta]f[:red]u[:yellow]l[white:] [::bu]title")
 	tv.SetDynamicColors(true)

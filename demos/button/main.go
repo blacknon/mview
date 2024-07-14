@@ -1,15 +1,15 @@
 // Demo code for the Button primitive.
 package main
 
-import "code.rocketnine.space/tslocum/cview"
+import "github.com/blacknon/mview"
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
 	app.EnableMouse(true)
 
-	button := cview.NewButton("Hit Enter to close")
+	button := mview.NewButton("Hit Enter to close")
 	button.SetRect(0, 0, 22, 3)
 	button.SetSelectedFunc(func() {
 		app.Stop()

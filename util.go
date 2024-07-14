@@ -1,4 +1,4 @@
-package cview
+package mview
 
 import (
 	"fmt"
@@ -532,7 +532,7 @@ func TaggedStringWidth(text string) int {
 // BUG(tslocum) Text containing square brackets is not escaped properly.
 // Use TextView.SetWrapWidth where possible.
 //
-// Issue: https://code.rocketnine.space/tslocum/cview/issues/27
+// Issue: https://github.com/blacknon/mview/issues/27
 func WordWrap(text string, width int) (lines []string) {
 	colorTagIndices, _, _, _, escapeIndices, strippedText, _ := decomposeText([]byte(text), true, false)
 
@@ -637,8 +637,8 @@ func WordWrap(text string, width int) (lines []string) {
 // recognized and substituted by the print functions of this package. For
 // example, to include a tag-like string in a box title or in a TextView:
 //
-//   box.SetTitle(cview.Escape("[squarebrackets]"))
-//   fmt.Fprint(textView, cview.EscapeBytes(`["quoted"]`))
+//   box.SetTitle(mview.Escape("[squarebrackets]"))
+//   fmt.Fprint(textView, mview.EscapeBytes(`["quoted"]`))
 func EscapeBytes(text []byte) []byte {
 	return nonEscapePattern.ReplaceAll(text, []byte("$1[]"))
 }
@@ -647,8 +647,8 @@ func EscapeBytes(text []byte) []byte {
 // recognized and substituted by the print functions of this package. For
 // example, to include a tag-like string in a box title or in a TextView:
 //
-//   box.SetTitle(cview.Escape("[squarebrackets]"))
-//   fmt.Fprint(textView, cview.Escape(`["quoted"]`))
+//   box.SetTitle(mview.Escape("[squarebrackets]"))
+//   fmt.Fprint(textView, mview.Escape(`["quoted"]`))
 func Escape(text string) string {
 	return nonEscapePattern.ReplaceAllString(text, "$1[]")
 }

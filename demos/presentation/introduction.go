@@ -1,10 +1,10 @@
 package main
 
-import "code.rocketnine.space/tslocum/cview"
+import "github.com/blacknon/mview"
 
-// Introduction returns a cview.List with the highlights of the cview package.
-func Introduction(nextSlide func()) (title string, info string, content cview.Primitive) {
-	list := cview.NewList()
+// Introduction returns a mview.List with the highlights of the mview package.
+func Introduction(nextSlide func()) (title string, info string, content mview.Primitive) {
+	list := mview.NewList()
 
 	listText := [][]string{
 		{"A Go package for terminal based UIs", "with a special focus on rich interactive widgets"},
@@ -19,7 +19,7 @@ func Introduction(nextSlide func()) (title string, info string, content cview.Pr
 		list.Clear()
 
 		for i, itemText := range listText {
-			item := cview.NewListItem(itemText[0])
+			item := mview.NewListItem(itemText[0])
 			item.SetSecondaryText(itemText[1])
 			item.SetShortcut(rune('1' + i))
 			item.SetSelectedFunc(nextSlide)

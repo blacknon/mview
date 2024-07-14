@@ -1,5 +1,5 @@
 /*
-A presentation of the cview package, implemented with cview.
+A presentation of the mview package, implemented with mview.
 
 Navigation
 
@@ -20,7 +20,7 @@ import (
 	_ "net/http/pprof"
 	"strconv"
 
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -36,10 +36,10 @@ const (
 // Slide is a function which returns the slide's title, any applicable
 // information and its main primitive, its. It receives a "nextSlide" function
 // which can be called to advance the presentation to the next slide.
-type Slide func(nextSlide func()) (title string, info string, content cview.Primitive)
+type Slide func(nextSlide func()) (title string, info string, content mview.Primitive)
 
 // The application.
-var app = cview.NewApplication()
+var app = mview.NewApplication()
 
 // Starting point for the presentation.
 func main() {
@@ -75,7 +75,7 @@ func main() {
 		End,
 	}
 
-	panels := cview.NewTabbedPanels()
+	panels := mview.NewTabbedPanels()
 
 	// Create the pages for all slides.
 	previousSlide := func() {
@@ -96,15 +96,15 @@ func main() {
 
 		title, info, primitive := slide(nextSlide)
 
-		h := cview.NewTextView()
+		h := mview.NewTextView()
 		if info != "" {
 			h.SetDynamicColors(true)
-			h.SetText("  [" + cview.ColorHex(cview.Styles.SecondaryTextColor) + "]Info:[-]  " + info)
+			h.SetText("  [" + mview.ColorHex(mview.Styles.SecondaryTextColor) + "]Info:[-]  " + info)
 		}
 
 		// Create a Flex layout that centers the logo and subtitle.
-		f := cview.NewFlex()
-		f.SetDirection(cview.FlexRow)
+		f := mview.NewFlex()
+		f.SetDirection(mview.FlexRow)
 		f.AddItem(h, 1, 1, false)
 		f.AddItem(primitive, 0, 1, true)
 

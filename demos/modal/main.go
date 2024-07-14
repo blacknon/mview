@@ -2,16 +2,16 @@
 package main
 
 import (
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 )
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
 	app.EnableMouse(true)
 
-	modal := cview.NewModal()
+	modal := mview.NewModal()
 	modal.SetText("Do you want to quit the application?")
 	modal.AddButtons([]string{"Quit", "Cancel"})
 	modal.SetDoneFunc(func(buttonIndex int, buttonLabel string) {

@@ -1,4 +1,4 @@
-package cview
+package mview
 
 import (
 	"code.rocketnine.space/tslocum/cbind"

@@ -1,4 +1,4 @@
-package cview
+package mview
 
 // Borders defines various borders used when primitives are drawn.
 // These may be changed to accommodate a different look and feel.

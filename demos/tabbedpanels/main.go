@@ -4,21 +4,21 @@ package main
 import (
 	"fmt"
 
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 )
 
 const panelCount = 5
 
 func main() {
-	app := cview.NewApplication()
+	app := mview.NewApplication()
 	defer app.HandlePanic()
 
 	app.EnableMouse(true)
 
-	panels := cview.NewTabbedPanels()
+	panels := mview.NewTabbedPanels()
 	for panel := 0; panel < panelCount; panel++ {
 		func(panel int) {
-			form := cview.NewForm()
+			form := mview.NewForm()
 			form.SetBorder(true)
 			form.SetTitle(fmt.Sprintf("This is tab %d. Choose another tab.", panel+1))
 			form.AddButton("Next", func() {

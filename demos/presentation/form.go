@@ -1,17 +1,17 @@
 package main
 
 import (
-	"code.rocketnine.space/tslocum/cview"
+	"github.com/blacknon/mview"
 )
 
 const form = `[green]package[white] main
 
 [green]import[white] (
-    [red]"code.rocketnine.space/tslocum/cview"[white]
+    [red]"github.com/blacknon/mview"[white]
 )
 
 [green]func[white] [yellow]main[white]() {
-    form := cview.[yellow]NewForm[white]().
+    form := mview.[yellow]NewForm[white]().
         [yellow]AddInputField[white]([red]"First name:"[white], [red]""[white], [red]20[white], nil, nil).
         [yellow]AddInputField[white]([red]"Last name:"[white], [red]""[white], [red]20[white], nil, nil).
         [yellow]AddDropDown[white]([red]"Role:"[white], [][green]string[white]{
@@ -23,14 +23,14 @@ const form = `[green]package[white] main
         [yellow]AddPasswordField[white]([red]"Password:"[white], [red]""[white], [red]10[white], [red]'*'[white], nil).
         [yellow]AddButton[white]([red]"Save"[white], [yellow]func[white]() { [blue]/* Save data */[white] }).
         [yellow]AddButton[white]([red]"Cancel"[white], [yellow]func[white]() { [blue]/* Cancel */[white] })
-    cview.[yellow]NewApplication[white]().
+    mview.[yellow]NewApplication[white]().
         [yellow]SetRoot[white](form, true).
         [yellow]Run[white]()
 }`
 
 // Form demonstrates forms.
-func Form(nextSlide func()) (title string, info string, content cview.Primitive) {
-	f := cview.NewForm()
+func Form(nextSlide func()) (title string, info string, content mview.Primitive) {
+	f := mview.NewForm()
 	f.AddInputField("First name:", "", 20, nil, nil)
 	f.AddInputField("Last name:", "", 20, nil, nil)
 	f.AddDropDownSimple("Role:", 0, nil, "Engineer", "Manager", "Administration")
