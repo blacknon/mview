@@ -1,6 +1,6 @@
-module code.rocketnine.space/tslocum/cview
+module github.com/blacknon/mview
 
-go 1.12
+go 1.22
 
 require (
 	code.rocketnine.space/tslocum/cbind v0.1.5
