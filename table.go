@@ -1120,9 +1120,9 @@ ColumnLoop:
 			text := cell.Text
 			if cell.isHeader && columnIndex == t.GetSortClickedColumn() {
 				if t.sortClickedDescending {
-					text = append(text, []byte("△")...)
-				} else {
 					text = append(text, []byte("▽")...)
+				} else {
+					text = append(text, []byte("△")...)
 				}
 			}
 			_, printed := PrintStyle(screen, text, x+columnX+1, y+rowY, finalWidth, cell.Align, SetAttributes(tcell.StyleDefault.Foreground(cell.Color), cell.Attributes))
