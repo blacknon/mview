@@ -51,6 +51,15 @@ type TableCell struct {
 
 	// `isSelected` is a temporary boolean value used to preserve the selection state of values during sorting.
 	isSelected bool
+
+	//
+	isHeader bool
+
+	//
+	SortedColor tcell.Color
+
+	//
+	SortedBackgroundColor tcell.Color
 }
 
 // NewTableCell returns a new table cell with sensible defaults. That is, left
@@ -196,6 +205,13 @@ func (c *TableCell) GetReference() interface{} {
 	return c.Reference
 }
 
+func (c *TableCell) SetIsHeader(isHeader bool) {
+	c.RLock()
+	defer c.RUnlock()
+
+	c.isHeader = isHeader
+}
+
 // GetLastPosition returns the position of the table cell the last time it was
 // drawn on screen. If the cell is not on screen, the return values are
 // undefined.
@@ -276,6 +292,9 @@ type Table struct {
 
 	// The cells of the table. Rows first, then columns.
 	cells [][]*TableCell
+
+	// header
+	header []string
 
 	// The rightmost column in the data set.
 	lastColumn int
@@ -1096,8 +1115,18 @@ ColumnLoop:
 				finalWidth = width - columnX - 1
 			}
 			cell.x, cell.y, cell.width = x+columnX+1, y+rowY, finalWidth
-			_, printed := PrintStyle(screen, cell.Text, x+columnX+1, y+rowY, finalWidth, cell.Align, SetAttributes(tcell.StyleDefault.Foreground(cell.Color), cell.Attributes))
-			if TaggedTextWidth(cell.Text)-printed > 0 && printed > 0 {
+
+			// NOTE(blacknon): If isHeader is enabled, add arrow if it was a sort column
+			text := cell.Text
+			if cell.isHeader && columnIndex == t.GetSortClickedColumn() {
+				if t.sortClickedDescending {
+					text = append(text, []byte("△")...)
+				} else {
+					text = append(text, []byte("▽")...)
+				}
+			}
+			_, printed := PrintStyle(screen, text, x+columnX+1, y+rowY, finalWidth, cell.Align, SetAttributes(tcell.StyleDefault.Foreground(cell.Color), cell.Attributes))
+			if TaggedTextWidth(text)-printed > 0 && printed > 0 {
 				_, _, style, _ := screen.GetContent(x+columnX+finalWidth, y+rowY)
 				PrintStyle(screen, []byte(string(SemigraphicsHorizontalEllipsis)), x+columnX+finalWidth, y+rowY, 1, AlignLeft, style)
 			}
@@ -1207,9 +1236,11 @@ ColumnLoop:
 	// Color the cell backgrounds. To avoid undesirable artefacts, we combine
 	// the drawing of a cell by background color, selected cells last.
 	type cellInfo struct {
-		x, y, w, h int
-		color      tcell.Color
-		selected   bool
+		x, y, w, h  int
+		color       tcell.Color
+		selected    bool
+		isHeader    bool
+		columnIndex int
 	}
 	cellsByBackgroundColor := make(map[tcell.Color][]*cellInfo)
 	var backgroundColors []tcell.Color
@@ -1232,13 +1263,16 @@ ColumnLoop:
 			cellSelected := !cell.NotSelectable && (columnSelected || rowSelected || t.rowsSelectable && t.columnsSelectable && column == t.selectedColumn && row == t.selectedRow)
 			cell.isSelected = cellSelected // add: update isSelected
 			entries, ok := cellsByBackgroundColor[cell.BackgroundColor]
+			isHeader := cell.isHeader
 			cellsByBackgroundColor[cell.BackgroundColor] = append(entries, &cellInfo{
-				x:        bx,
-				y:        by,
-				w:        bw,
-				h:        bh,
-				color:    cell.Color,
-				selected: cellSelected,
+				x:           bx,
+				y:           by,
+				w:           bw,
+				h:           bh,
+				color:       cell.Color,
+				selected:    cellSelected,
+				isHeader:    isHeader,
+				columnIndex: columnIndex,
 			})
 			if !ok {
 				backgroundColors = append(backgroundColors, cell.BackgroundColor)
@@ -1260,14 +1294,19 @@ ColumnLoop:
 	for _, bgColor := range backgroundColors {
 		entries := cellsByBackgroundColor[bgColor]
 		for _, cell := range entries {
-			if cell.selected {
-				if t.selectedStyle != tcell.StyleDefault {
-					defer colorBackground(cell.x, cell.y, cell.w, cell.h, selBg, selFg, selAttr, false)
-				} else {
-					defer colorBackground(cell.x, cell.y, cell.w, cell.h, bgColor, cell.color, 0, true)
-				}
+			// @TODO(blacknon): ここにheaderとselected columnである場合の条件分岐を入れてやる
+			if cell.columnIndex == t.sortClickedColumn && cell.isHeader {
+				colorBackground(cell.x, cell.y, cell.w, cell.h, selBg, selFg, selAttr, false)
 			} else {
-				colorBackground(cell.x, cell.y, cell.w, cell.h, bgColor, tcell.ColorDefault, 0, false)
+				if cell.selected {
+					if t.selectedStyle != tcell.StyleDefault {
+						defer colorBackground(cell.x, cell.y, cell.w, cell.h, selBg, selFg, selAttr, false)
+					} else {
+						defer colorBackground(cell.x, cell.y, cell.w, cell.h, bgColor, cell.color, 0, true)
+					}
+				} else {
+					colorBackground(cell.x, cell.y, cell.w, cell.h, bgColor, tcell.ColorDefault, 0, false)
+				}
 			}
 		}
 	}
