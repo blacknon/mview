@@ -501,6 +501,8 @@ func (t *Table) GetSelection() (row, column int) {
 // is available (even if the selection ends up being the same as before and even
 // if cells are not selectable).
 func (t *Table) Select(row, column int) {
+	t.unsetSelected()
+
 	t.Lock()
 	defer t.Unlock()
 
@@ -835,7 +837,9 @@ func (t *Table) Sort(column int, descending bool) {
 
 	t.selectedRow, t.selectedColumn = t.findSelected()
 	if t.selectionChanged != nil {
+		t.Unlock()
 		t.selectionChanged(t.selectedRow, t.selectedColumn)
+		t.Lock()
 	}
 }
 
@@ -1534,4 +1538,16 @@ func (t *Table) findSelected() (row, column int) {
 		}
 	}
 	return 0, 0
+}
+
+func (t *Table) unsetSelected() {
+	for _, row := range t.cells {
+		for _, cell := range row {
+			if cell != nil && cell.isSelected {
+				t.Lock()
+				cell.isSelected = false
+				t.Unlock()
+			}
+		}
+	}
 }
