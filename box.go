@@ -31,9 +31,15 @@ type Box struct {
 	// Whether or not the box's background is transparent.
 	backgroundTransparent bool
 
+	// If set to true, the background of this box is not cleared while drawing.
+	dontClear bool
+
 	// Whether or not a border is drawn, reducing the box's space for content by
 	// two in width and height.
 	border bool
+
+	// The border style.
+	borderStyle tcell.Style
 
 	// The color of the border.
 	borderColor tcell.Color
@@ -163,7 +169,7 @@ func (b *Box) GetInnerRect() (int, int, int, int) {
 // if this primitive is part of a layout (e.g. Flex, Grid) or if it was added
 // like this:
 //
-//   application.SetRoot(b, true)
+//	application.SetRoot(b, true)
 func (b *Box) SetRect(x, y, width, height int) {
 	b.l.Lock()
 	defer b.l.Unlock()
@@ -385,7 +391,7 @@ func (b *Box) SetBorderColorFocused(color tcell.Color) {
 // SetBorderAttributes sets the border's style attributes. You can combine
 // different attributes using bitmask operations:
 //
-//   box.SetBorderAttributes(tcell.AttrUnderline | tcell.AttrBold)
+//	box.SetBorderAttributes(tcell.AttrUnderline | tcell.AttrBold)
 func (b *Box) SetBorderAttributes(attr tcell.AttrMask) {
 	b.l.Lock()
 	defer b.l.Unlock()
@@ -511,6 +517,84 @@ func (b *Box) Draw(screen tcell.Screen) {
 	// Call custom draw function.
 	if b.draw != nil {
 		b.innerX, b.innerY, b.innerWidth, b.innerHeight = b.draw(screen, b.x, b.y, b.width, b.height)
+	}
+}
+
+// DrawForSubclass draws this box under the assumption that primitive p is a
+// subclass of this box. This is needed e.g. to draw proper box frames which
+// depend on the subclass's focus.
+//
+// Only call this function from your own custom primitives. It is not needed in
+// applications that have no custom primitives.
+func (b *Box) DrawForSubclass(screen tcell.Screen, p Primitive) {
+	// Don't draw anything if there is no space.
+	if b.width <= 0 || b.height <= 0 {
+		return
+	}
+
+	// Fill background.
+	background := tcell.StyleDefault.Background(b.backgroundColor)
+	if !b.dontClear {
+		for y := b.y; y < b.y+b.height; y++ {
+			for x := b.x; x < b.x+b.width; x++ {
+				screen.SetContent(x, y, ' ', nil, background)
+			}
+		}
+	}
+
+	// Draw border.
+	if b.border && b.width >= 2 && b.height >= 2 {
+		var vertical, horizontal, topLeft, topRight, bottomLeft, bottomRight rune
+		if p.HasFocus() {
+			horizontal = Borders.HorizontalFocus
+			vertical = Borders.VerticalFocus
+			topLeft = Borders.TopLeftFocus
+			topRight = Borders.TopRightFocus
+			bottomLeft = Borders.BottomLeftFocus
+			bottomRight = Borders.BottomRightFocus
+		} else {
+			horizontal = Borders.Horizontal
+			vertical = Borders.Vertical
+			topLeft = Borders.TopLeft
+			topRight = Borders.TopRight
+			bottomLeft = Borders.BottomLeft
+			bottomRight = Borders.BottomRight
+		}
+		for x := b.x + 1; x < b.x+b.width-1; x++ {
+			screen.SetContent(x, b.y, horizontal, nil, b.borderStyle)
+			screen.SetContent(x, b.y+b.height-1, horizontal, nil, b.borderStyle)
+		}
+		for y := b.y + 1; y < b.y+b.height-1; y++ {
+			screen.SetContent(b.x, y, vertical, nil, b.borderStyle)
+			screen.SetContent(b.x+b.width-1, y, vertical, nil, b.borderStyle)
+		}
+		screen.SetContent(b.x, b.y, topLeft, nil, b.borderStyle)
+		screen.SetContent(b.x+b.width-1, b.y, topRight, nil, b.borderStyle)
+		screen.SetContent(b.x, b.y+b.height-1, bottomLeft, nil, b.borderStyle)
+		screen.SetContent(b.x+b.width-1, b.y+b.height-1, bottomRight, nil, b.borderStyle)
+
+		// Draw title.
+		if len(b.title) != 0 && b.width >= 4 {
+			printed, _ := Print(screen, b.title, b.x+1, b.y, b.width-2, b.titleAlign, b.titleColor)
+			if len(b.title)-printed > 0 && printed > 0 {
+				xEllipsis := b.x + b.width - 2
+				if b.titleAlign == AlignRight {
+					xEllipsis = b.x + 1
+				}
+				_, _, style, _ := screen.GetContent(xEllipsis, b.y)
+				fg, _, _ := style.Decompose()
+				Print(screen, []byte(string(SemigraphicsHorizontalEllipsis)), xEllipsis, b.y, 1, AlignLeft, fg)
+			}
+		}
+	}
+
+	// Call custom draw function.
+	if b.draw != nil {
+		b.innerX, b.innerY, b.innerWidth, b.innerHeight = b.draw(screen, b.x, b.y, b.width, b.height)
+	} else {
+		// Remember the inner rect.
+		b.innerX = -1
+		b.innerX, b.innerY, b.innerWidth, b.innerHeight = b.GetInnerRect()
 	}
 }
 
