@@ -321,7 +321,7 @@ type Table struct {
 	trackEnd bool
 
 	// The sort function of the table. Defaults to a case-sensitive comparison.
-	sortFunc func(column, i, j int) bool
+	sortFunc func(column int, i, j []byte) bool
 
 	// Whether or not the table should be sorted when a fixed row is clicked.
 	sortClicked bool
@@ -799,7 +799,7 @@ func (t *Table) SetSortClicked(sortClicked bool) {
 
 // SetSortFunc sets the sorting function used for the table. When unset, a
 // case-sensitive string comparison is used.
-func (t *Table) SetSortFunc(sortFunc func(column, i, j int) bool) {
+func (t *Table) SetSortFunc(sortFunc func(column int, i, j []byte) bool) {
 	t.Lock()
 	defer t.Unlock()
 
@@ -817,8 +817,8 @@ func (t *Table) Sort(column int, descending bool) {
 	}
 
 	if t.sortFunc == nil {
-		t.sortFunc = func(column, i, j int) bool {
-			return bytes.Compare(t.cells[i][column].Text, t.cells[j][column].Text) == -1
+		t.sortFunc = func(column int, i, j []byte) bool {
+			return bytes.Compare(i, j) == -1
 		}
 	}
 
@@ -829,10 +829,13 @@ func (t *Table) Sort(column int, descending bool) {
 			return j > i
 		}
 
+		ibyte := t.cells[i][column].Text
+		jbyte := t.cells[j][column].Text
+
 		if !descending {
-			return t.sortFunc(column, i, j)
+			return t.sortFunc(column, ibyte, jbyte)
 		}
-		return t.sortFunc(column, j, i)
+		return t.sortFunc(column, jbyte, ibyte)
 	})
 
 	t.selectedRow, t.selectedColumn = t.findSelected()
