@@ -1,3 +1,6 @@
+v1.6.4 (2026-04-03)
+- Add Application.EnablePassthroughCtrlC
+
 v1.6.3 (2025-12-20)
 - Upgrade to tcell/v3
 
