@@ -1,3 +1,18 @@
+v1.6.4 (2026-04-03)
+- Add Application.EnablePassthroughCtrlC
+
+v1.6.3 (2025-12-20)
+- Upgrade to tcell/v3
+
+v1.6.2 (2025-11-24)
+- Fix escaping bracket characters in text
+
+v1.6.1 (2025-11-19)
+- Swap text region foreground and background colors when highlighted
+
+v1.6.0 (2025-04-08)
+- Migrate to codeberg.org
+
 v1.5.9 (2022-02-02)
 - Fix unlocking application mutex when failing to initialize the screen
 - Fix DropDown.SetCurrentOption Unlock of unlocked RWMutex panic

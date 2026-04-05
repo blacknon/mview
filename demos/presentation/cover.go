@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/blacknon/mview"
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 const logo = `

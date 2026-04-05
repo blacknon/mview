@@ -227,6 +227,132 @@ func BenchmarkTextViewGetText(b *testing.B) {
 	}
 }
 
+type textViewResult struct {
+	x     int
+	y     int
+	str   string
+	width int
+}
+
+type textViewRegionsTestCase struct {
+	text    string           // Text to test with.
+	normal  []textViewResult // How the text should appear normally.
+	escaped []textViewResult // How the text should appear when escaped.
+}
+
+var textViewHelloWorldResult = []textViewResult{
+	{x: 0, y: 0, str: "H", width: 1},
+	{x: 1, y: 0, str: "e", width: 1},
+	{x: 2, y: 0, str: "l", width: 1},
+	{x: 3, y: 0, str: "l", width: 1},
+	{x: 4, y: 0, str: "o", width: 1},
+	{x: 5, y: 0, str: ",", width: 1},
+	{x: 7, y: 0, str: "w", width: 1},
+	{x: 8, y: 0, str: "o", width: 1},
+	{x: 9, y: 0, str: "r", width: 1},
+	{x: 10, y: 0, str: "l", width: 1},
+	{x: 11, y: 0, str: "d", width: 1},
+	{x: 12, y: 0, str: "!", width: 1},
+}
+
+var textViewRegionsTestCases = []textViewRegionsTestCase{
+	{
+		text:    `Hello, world!`,
+		normal:  textViewHelloWorldResult,
+		escaped: textViewHelloWorldResult,
+	}, {
+		text: "[TEST\033[0m]\033[36mTEST",
+		normal: []textViewResult{
+			{x: 0, y: 0, str: "[", width: 1},
+			{x: 1, y: 0, str: "T", width: 1},
+			{x: 2, y: 0, str: "E", width: 1},
+			{x: 3, y: 0, str: "S", width: 1},
+			{x: 4, y: 0, str: "T", width: 1},
+			{x: 5, y: 0, str: "]", width: 1},
+			{x: 6, y: 0, str: "T", width: 1},
+			{x: 7, y: 0, str: "E", width: 1},
+			{x: 8, y: 0, str: "S", width: 1},
+			{x: 9, y: 0, str: "T", width: 1},
+		},
+		escaped: []textViewResult{
+			{x: 0, y: 0, str: "[", width: 1},
+			{x: 1, y: 0, str: "T", width: 1},
+			{x: 2, y: 0, str: "E", width: 1},
+			{x: 3, y: 0, str: "S", width: 1},
+			{x: 4, y: 0, str: "T", width: 1},
+			{x: 5, y: 0, str: "[", width: 1},
+			{x: 6, y: 0, str: "]", width: 1},
+			{x: 7, y: 0, str: "T", width: 1},
+			{x: 8, y: 0, str: "E", width: 1},
+			{x: 9, y: 0, str: "S", width: 1},
+			{x: 10, y: 0, str: "T", width: 1},
+		},
+	},
+}
+
+func TestTextViewANSI(t *testing.T) {
+	t.Parallel()
+
+	for j := 0; j < 2; j++ {
+		for i, c := range textViewRegionsTestCases {
+			label := "Normal"
+			expectedResult := c.normal
+			if j == 1 {
+				label = "Escaped"
+				expectedResult = c.escaped
+			}
+
+			t.Run(fmt.Sprintf("%s/%d", label, i+1), func(t *testing.T) {
+				t.Parallel()
+
+				tv := NewTextView()
+				tv.SetDynamicColors(true)
+
+				app, err := newTestApp(tv)
+				if err != nil {
+					t.Errorf("failed to initialize Application: %s", err)
+				}
+				app.screen.SetSize(screenW, screenH)
+				tv.SetRect(0, 0, screenW, screenH)
+
+				content := c.text
+				if j == 1 {
+					content = Escape(content)
+				}
+
+				content = TranslateANSI(content)
+
+				tv.SetText(content)
+
+				tv.Draw(app.screen)
+				var expected textViewResult
+				for y := 0; y < screenH; y++ {
+					for x := 0; x < screenW; x++ {
+						expected = textViewResult{
+							str:   " ",
+							width: 1,
+						}
+						for _, nc := range expectedResult {
+							if nc.x == x && nc.y == y {
+								expected = nc
+								break
+							}
+						}
+
+						str, _, width := app.screen.Get(x, y)
+						if str != expected.str {
+							t.Errorf("unexpected str at %d, %d: expected '%s', got '%s'", x, y, expected.str, str)
+						}
+						if width != expected.width {
+							t.Errorf("unexpected width at %d, %d: expected %d, got %d", x, y, expected.width, width)
+						}
+					}
+				}
+			})
+		}
+	}
+}
+
 func TestTextViewDraw(t *testing.T) {
 	t.Parallel()
 

@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 const (
@@ -51,6 +51,9 @@ type Application struct {
 
 	// Whether or not to enable mouse events.
 	enableMouse bool
+
+	// Whether or not Ctrl+C key events are passed through instead of stopping the application.
+	passthroughCtrlC bool
 
 	// An optional capture function which receives a key event and returns the
 	// event to be forwarded to the default input handler (nil if nothing should
@@ -294,6 +297,14 @@ func (a *Application) EnableMouse(enable bool) {
 	a.enableMouse = enable
 }
 
+// EnablePassthroughCtrlC enables passing through Ctrl+C key events instead of
+// stopping the application. By default, pressing Ctrl+C stops the application.
+func (a *Application) EnablePassthroughCtrlC(enable bool) {
+	a.Lock()
+	defer a.Unlock()
+	a.passthroughCtrlC = enable
+}
+
 // Run starts the application and thus the event loop. This function returns
 // when Stop() was called.
 func (a *Application) Run() error {
@@ -375,8 +386,8 @@ func (a *Application) Run() error {
 				}
 			}
 
-			// Ctrl-C closes the application.
-			if event.Key() == tcell.KeyCtrlC {
+			// Ctrl-C closes the application (when enabled).
+			if !a.passthroughCtrlC && event.Key() == tcell.KeyCtrlC {
 				a.Stop()
 				return
 			}
@@ -461,29 +472,26 @@ func (a *Application) Run() error {
 	}()
 
 	// Start screen event loop.
-	for {
-		a.Lock()
-		screen := a.screen
-		a.Unlock()
+	a.Lock()
+	screen := a.screen
+	a.Unlock()
+	if screen != nil {
+		for event := range screen.EventQ() {
+			if event == nil {
+				break
+			}
 
-		if screen == nil {
-			break
+			semaphore.Lock()
+			handle(event)
+			semaphore.Unlock()
 		}
-
-		// Wait for next event.
-		event := screen.PollEvent()
-		if event == nil {
-			break
-		}
-
-		semaphore.Lock()
-		handle(event)
-		semaphore.Unlock()
 	}
 
 	// Wait for the screen replacement event loop to finish.
 	wg.Wait()
+	a.Lock()
 	a.screen = nil
+	a.Unlock()
 
 	return nil
 }

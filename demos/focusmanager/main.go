@@ -4,9 +4,9 @@ package main
 import (
 	"log"
 
-	"code.rocketnine.space/tslocum/cbind"
+	"codeberg.org/tslocum/cbind"
 	"github.com/blacknon/mview"
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 func wrap(f func()) func(ev *tcell.EventKey) *tcell.EventKey {

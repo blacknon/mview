@@ -1,7 +1,7 @@
 /*
 A presentation of the mview package, implemented with mview.
 
-Navigation
+# Navigation
 
 The presentation will advance to the next slide when the primitive demonstrated
 in the current slide is left (usually by hitting Enter or Escape). Additionally,
@@ -13,6 +13,8 @@ the following shortcuts can be used:
 package main
 
 import (
+	"bytes"
+	"embed"
 	"flag"
 	"fmt"
 	"log"
@@ -21,7 +23,7 @@ import (
 	"strconv"
 
 	"github.com/blacknon/mview"
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 const (
@@ -40,6 +42,18 @@ type Slide func(nextSlide func()) (title string, info string, content mview.Prim
 
 // The application.
 var app = mview.NewApplication()
+
+//go:embed *.go
+var embedFS embed.FS
+
+// exampleCode returns the content of the specified example file.
+func exampleCode(name string) []byte {
+	buf, err := embedFS.ReadFile(name + ".go")
+	if err != nil {
+		log.Panicf("failed to open %s.go: %s", name, err)
+	}
+	return bytes.TrimSpace(buf)
+}
 
 // Starting point for the presentation.
 func main() {
@@ -62,8 +76,7 @@ func main() {
 		Cover,
 		Introduction,
 		Colors,
-		TextView1,
-		TextView2,
+		TextView,
 		InputField,
 		Slider,
 		Form,

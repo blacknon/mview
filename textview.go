@@ -7,7 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/mattn/go-runewidth"
 	"github.com/rivo/uniseg"
@@ -51,7 +51,7 @@ type textViewRegion struct {
 // but if a handler is installed via SetChangedFunc(), you can cause it to be
 // redrawn. (See SetChangedFunc() for more details.)
 //
-// Navigation
+// # Navigation
 //
 // If the text view is scrollable (the default), text is kept in a buffer which
 // may be larger than the screen and can be navigated similarly to Vim:
@@ -70,27 +70,27 @@ type textViewRegion struct {
 //
 // Use SetInputCapture() to override or modify keyboard input.
 //
-// Colors
+// # Colors
 //
 // If dynamic colors are enabled via SetDynamicColors(), text color can be
 // changed dynamically by embedding color strings in square brackets. This works
 // the same way as anywhere else. Please see the package documentation for more
 // information.
 //
-// Regions and Highlights
+// # Regions and Highlights
 //
 // If regions are enabled via SetRegions(), you can define text regions within
 // the text and assign region IDs to them. Text regions start with region tags.
 // Region tags are square brackets that contain a region ID in double quotes,
 // for example:
 //
-//   We define a ["rg"]region[""] here.
+//	We define a ["rg"]region[""] here.
 //
 // A text region ends with the next region tag. Tags with no region ID ([""])
 // don't start new regions. They can therefore be used to mark the end of a
 // region. Region IDs must satisfy the following regular expression:
 //
-//   [a-zA-Z0-9_,;: \-\.]+
+//	[a-zA-Z0-9_,;: \-\.]+
 //
 // Regions can be highlighted by calling the Highlight() function with one or
 // more region IDs. This can be used to display search results, for example.
@@ -233,8 +233,6 @@ func NewTextView() *TextView {
 		valign:              AlignTop,
 		wrap:                true,
 		textColor:           Styles.PrimaryTextColor,
-		highlightForeground: Styles.PrimitiveBackgroundColor,
-		highlightBackground: Styles.PrimaryTextColor,
 	}
 }
 
@@ -330,6 +328,8 @@ func (t *TextView) SetTextColor(color tcell.Color) {
 }
 
 // SetHighlightForegroundColor sets the foreground color of highlighted text.
+// The foreground color and background color of the text is swapped unless a
+// custom highlight color has been set.
 func (t *TextView) SetHighlightForegroundColor(color tcell.Color) {
 	t.Lock()
 	defer t.Unlock()
@@ -338,6 +338,8 @@ func (t *TextView) SetHighlightForegroundColor(color tcell.Color) {
 }
 
 // SetHighlightBackgroundColor sets the foreground color of highlighted text.
+// The foreground color and background color of the text is swapped unless a
+// custom highlight color has been set.
 func (t *TextView) SetHighlightBackgroundColor(color tcell.Color) {
 	t.Lock()
 	defer t.Unlock()
@@ -1118,21 +1120,22 @@ func (t *TextView) Draw(screen tcell.Screen) {
 	}
 
 	// Adjust column offset.
-	if t.align == AlignLeft {
+	switch t.align {
+	case AlignLeft:
 		if t.columnOffset+width > t.longestLine {
 			t.columnOffset = t.longestLine - width
 		}
 		if t.columnOffset < 0 {
 			t.columnOffset = 0
 		}
-	} else if t.align == AlignRight {
+	case AlignRight:
 		if t.columnOffset-width < -t.longestLine {
 			t.columnOffset = width - t.longestLine
 		}
 		if t.columnOffset > 0 {
 			t.columnOffset = 0
 		}
-	} else { // AlignCenter.
+	default: // AlignCenter.
 		half := (t.longestLine - width) / 2
 		if half > 0 {
 			if t.columnOffset > half {
@@ -1149,9 +1152,10 @@ func (t *TextView) Draw(screen tcell.Screen) {
 	// Calculate offset to apply vertical alignment
 	verticalOffset := 0
 	if len(t.index) < height {
-		if t.valign == AlignMiddle {
+		switch t.valign {
+		case AlignMiddle:
 			verticalOffset = (height - len(t.index)) / 2
-		} else if t.valign == AlignBottom {
+		case AlignBottom:
 			verticalOffset = height - len(t.index)
 		}
 	}
@@ -1194,11 +1198,12 @@ func (t *TextView) Draw(screen tcell.Screen) {
 
 		// Calculate the position of the line.
 		var skip, posX int
-		if t.align == AlignLeft {
+		switch t.align {
+		case AlignLeft:
 			posX = -t.columnOffset
-		} else if t.align == AlignRight {
+		case AlignRight:
 			posX = width - index.Width - t.columnOffset
-		} else { // AlignCenter.
+		default: // AlignCenter.
 			posX = (width-index.Width)/2 - t.columnOffset
 		}
 		if posX < 0 {
@@ -1251,8 +1256,8 @@ func (t *TextView) Draw(screen tcell.Screen) {
 				}
 
 				// Mix the existing style with the new style.
-				_, _, existingStyle, _ := screen.GetContent(x+posX, drawAtY)
-				_, background, _ := existingStyle.Decompose()
+				_, existingStyle, _ := screen.Get(x+posX, drawAtY)
+				background := existingStyle.GetBackground()
 				style := overlayStyle(background, defaultStyle, foregroundColor, backgroundColor, attributes)
 
 				// Do we highlight this character?
@@ -1265,20 +1270,32 @@ func (t *TextView) Draw(screen tcell.Screen) {
 				if highlighted {
 					fg := t.highlightForeground
 					bg := t.highlightBackground
-					if fg == tcell.ColorDefault {
-						fg = Styles.PrimaryTextColor
+					if (fg == tcell.ColorDefault || fg == tcell.ColorNone) && (bg == tcell.ColorDefault || bg == tcell.ColorNone) {
+						// Swap foreground and background colors.
+						fg, bg = style.GetBackground(), style.GetForeground()
 						if fg == tcell.ColorDefault {
-							fg = tcell.ColorWhite.TrueColor()
+							fg = Styles.PrimaryTextColor
+							if fg == tcell.ColorDefault {
+								fg = tcell.ColorWhite.TrueColor()
+							}
 						}
-					}
-					if bg == tcell.ColorDefault {
-						r, g, b := fg.RGB()
-						c := colorful.Color{R: float64(r) / 255, G: float64(g) / 255, B: float64(b) / 255}
-						_, _, li := c.Hcl()
-						if li < .5 {
-							bg = tcell.ColorWhite.TrueColor()
-						} else {
-							bg = tcell.ColorBlack.TrueColor()
+					} else {
+						// Use custom highlight colors.
+						if fg == tcell.ColorDefault {
+							fg = Styles.PrimaryTextColor
+							if fg == tcell.ColorDefault {
+								fg = tcell.ColorWhite.TrueColor()
+							}
+						}
+						if bg == tcell.ColorDefault {
+							r, g, b := fg.RGB()
+							c := colorful.Color{R: float64(r) / 255, G: float64(g) / 255, B: float64(b) / 255}
+							_, _, li := c.Hcl()
+							if li < .5 {
+								bg = tcell.ColorWhite.TrueColor()
+							} else {
+								bg = tcell.ColorBlack.TrueColor()
+							}
 						}
 					}
 					style = style.Foreground(fg).Background(bg)
@@ -1298,9 +1315,9 @@ func (t *TextView) Draw(screen tcell.Screen) {
 				// Draw the character.
 				for offset := screenWidth - 1; offset >= 0; offset-- {
 					if offset == 0 {
-						screen.SetContent(x+posX+offset, drawAtY, main, comb, style)
+						screen.Put(x+posX+offset, drawAtY, string(append([]rune{main}, comb...)), style)
 					} else {
-						screen.SetContent(x+posX+offset, drawAtY, ' ', nil, style)
+						screen.Put(x+posX+offset, drawAtY, " ", style)
 					}
 				}
 

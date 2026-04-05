@@ -4,32 +4,8 @@ import (
 	"fmt"
 
 	"github.com/blacknon/mview"
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
-
-const sliderCode = `[green]package[white] main
-
-[green]import[white] (
-    [red]"fmt"[white]
-
-    [red]"github.com/gdamore/tcell/v2"[white]
-    [red]"github.com/blacknon/mview"[white]
-)
-
-[green]func[white] [yellow]main[white]() {
-    slider := mview.[yellow]NewSlider[white]()
-    slider.[yellow]SetLabel[white]([red]"Volume:   0%"[white])
-    slider.[yellow][yellow]SetChangedFunc[white]([yellow]func[white](key tcell.Key) {
-        label := fmt.[yellow]Sprintf[white]("Volume: %3d%%", value)
-        slider.[yellow]SetLabel[white](label)
-    })
-    slider.[yellow][yellow]SetDoneFunc[white]([yellow]func[white](key tcell.Key) {
-        [yellow]nextSlide[white]()
-    })
-    app := mview.[yellow]NewApplication[white]()
-    app.[yellow]SetRoot[white](slider, true)
-    app.[yellow]Run[white]()
-}`
 
 // Slider demonstrates the Slider.
 func Slider(nextSlide func()) (title string, info string, content mview.Primitive) {
@@ -41,5 +17,5 @@ func Slider(nextSlide func()) (title string, info string, content mview.Primitiv
 	slider.SetDoneFunc(func(key tcell.Key) {
 		nextSlide()
 	})
-	return "Slider", sliderInfo, Code(slider, 30, 1, sliderCode)
+	return "Slider", sliderInfo, Code(slider, 30, 1, "slider")
 }
